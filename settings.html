@@ -1,0 +1,147 @@
+<html><head><style type="text/css"></style>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title> - jsFiddle demo by TransatlanticFoe</title>
+  
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.js"></script>
+  
+  
+  
+  
+  
+  
+  <style type="text/css">
+    .timers {
+    margin-bottom: 25px;
+}
+
+.timerStep {
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+label > * {
+    display: block;
+}
+
+.unit, input[type=number], input[type=checkbox] {
+    display: inline-block;
+}
+input[type=number] {
+    width: 100px;
+}
+  </style>
+  
+
+
+<script type="text/javascript">//<![CDATA[ 
+
+var myApp = angular.module('watchPot',[]);
+
+function CoffeeCtrl($scope) {
+    $scope.timers = [];
+    $scope.labelOptions = ['Pour', 'Stir', 'Steep', 'Plunge', 'Flip', 'Wait'];
+    $scope.grindOptions = ['Fine', 'Medium Fine', 'Medium', 'Medium Course', 'Course'];
+    $scope.unitOptions = ['g', 'fl oz', 'ml', 'c', 'scoops', 'shots'];
+    
+    $scope.addTimer = function() {
+        var l = $scope.timers.push({
+            name: '',
+            description: '',
+            grind: '',
+            coffeeAmount: 0.0,
+            coffeeUnit: 'g',
+            waterAmount: 0.0,
+            waterUnit: 'g',
+            timerSteps: []
+        });
+    };
+    
+    $scope.addTimerStep = function(timer) {
+        timer.timerSteps.push({
+            label: '',
+            len: 0,
+            buffer: false
+        });
+    }
+    
+    $scope.removeTimerStep = function(timer, idx) {
+        timer.timerSteps.splice(idx, 1);
+    }
+    
+    $scope.removeTimer = function(idx) {
+        $scope.timers.splice(idx, 1);
+    }
+    
+    $scope.save = function() {
+        document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify({'timers': $scope.timers}));
+    }
+}
+//]]>  
+
+</script>
+
+
+</head>
+<body>
+  <div ng-app="watchPot">
+    <div ng-controller="CoffeeCtrl">
+        <h1>WatchPot</h1>
+        <div ng-show="!timers.length">Add a timer to get started.</div>
+        <div ng-hide="!timers.length" class="timers" ng-repeat="timer in timers">
+            <label>Name
+                <input type='text' ng-model='timer.name'></input>
+            </label>
+            <label>Description
+                <input type='text' ng-model='timer.description'></input>
+            </label>
+            <label>Grind
+                <select ng-model="timer.grind" ng-options='g for g in grindOptions'>
+                </select>
+            </label>
+            <label>Coffee Amount
+                <div>
+                    <input type="number" pattern="\d*" ng-model="timer.coffeeAmount"></input>
+                    <select class="unit" ng-model="timer.coffeeUnit" ng-options='u for u in unitOptions'>
+                    </select>
+                </div>
+            </label>
+            <label>Water Amount
+                <div>
+                    <input type="number" pattern="\d*" ng-model="timer.waterAmount"></input>
+                    <select class="unit" ng-model="timer.waterUnit" ng-options='u for u in unitOptions'>
+                    </select>
+                </div>
+                    
+            </label>
+            <div ng-show="!timer.timerSteps.length">Add at least one timer step.</div>
+            <div ng-hide="!timer.timerSteps.length" class="timerStep" ng-repeat="timerStep in timer.timerSteps">
+                <h3>Step {{ $index+1 }}</h3>
+                <label>Label
+                    <select ng-model="timerStep.label" ng-options='l for l in labelOptions'>
+                    </select>
+                </label>
+                <label>Length (sec)
+                    <input type="number" pattern="\d*" ng-model="timerStep.len" style="display: block"></input>
+                </label>
+                <label>Buffer?
+                    <input type="checkbox" ng-model="timerStep.buffer"></input>
+                </label>
+                <button ng-click="removeTimerStep(timer, $index)">Remove Timer Step</button>
+            </div>
+            <button ng-click="addTimerStep(timer)">Add Timer Step</button>
+            <button ng-click="removeTimer($index)">Remove Timer</button>
+        </div>
+        <br />
+        <button ng-click="addTimer()">Add Timer</button>
+        <br />
+        <br />
+        <button ng-click="save()">Save</button>
+    </div>
+</div>
+</body>
+</html>
