@@ -138,9 +138,11 @@ function getTimerCardBody(timer) {
 }
 
 function startTimer(timer) {
-  var timerWindow = new UI.Window();
-  var timerSteps = timer.timerSteps;
-  var timerLabel = new UI.Text({
+  var timeoutInterval = 200,
+      timeoutIterations = 1000/timeoutInterval,
+      timerSteps = timer.timerSteps;
+    var timerWindow = new UI.Window();
+    var timerLabel = new UI.Text({
     position: new Vector2(0, 10),
     size: new Vector2(144, 30),
     font: 'gothic-24-bold',
@@ -168,8 +170,10 @@ function startTimer(timer) {
   
   var currentStep = 0,
       timeLeft = 0,
+      time = 0,
       isBuffer = false,
-      isDone = false;
+      isDone = false,
+      timeoutCounter = 0;
   function startTimerStep(step, nextStepName, vibeLen) {
     timeLeft = step.len;
     timerField.text(step.len);
@@ -182,37 +186,46 @@ function startTimer(timer) {
     Vibe.vibrate(vibeLen);
   }
   function decrement() {
-    timerField.text(--timeLeft);
-    if (!timeLeft) {
-      if (isDone) {
-        $window.clearInterval(interval);
-        timerWindow.hide();
-      } else {
-        var nextStepLabel = currentStep+2 < timerSteps.length ? timerSteps[currentStep+2].label : "";
-        if (!isBuffer && timerSteps[currentStep].buffer) {
-          isBuffer = true;
-          startTimerStep({
-            label: 'Buffer',
-            len: BUFFER_LENGTH,
-            buffer: false
-          }, nextStepLabel, 'short');
+    time += timeoutInterval;
+    if (++timeoutCounter >= timeoutIterations) {
+      timeoutCounter = 0;
+      timerField.text(--timeLeft);
+      if (!timeLeft) {
+        if (isDone) {
+          timerWindow.hide();
         } else {
-          isBuffer = false;
-          if (++currentStep >= timerSteps.length) {
-            isDone = true;
+          var nextStepLabel = currentStep+2 < timerSteps.length ? timerSteps[currentStep+2].label : "";
+          if (!isBuffer && timerSteps[currentStep].buffer) {
+            isBuffer = true;
             startTimerStep({
-              label: 'Done!',
-              len: 10,
+              label: 'Buffer',
+              len: BUFFER_LENGTH,
               buffer: false
-            }, nextStepLabel, 'double');
+            }, nextStepLabel, 'short');
           } else {
-            startTimerStep(timerSteps[currentStep], nextStepLabel, 'short');
+            isBuffer = false;
+            if (++currentStep >= timerSteps.length) {
+              isDone = true;
+              startTimerStep({
+                label: 'Done!',
+                len: 10,
+                buffer: false
+              }, nextStepLabel, 'double');
+            } else {
+              startTimerStep(timerSteps[currentStep], nextStepLabel, 'short');
+            }
           }
         }
       }
     }
+    if (!isDone || timeLeft) {
+      var timeDiff = (new Date().getTime() - startTime) - time;
+      console.log(timeDiff);
+      $window.setTimeout(decrement, timeoutInterval-timeDiff);
+    }
   }
   startTimerStep(timerSteps[currentStep], currentStep+1 < timerSteps.length ? timerSteps[currentStep+1].label : "", 'short');
-  var interval = $window.setInterval(decrement, 1000);
-  
+  // http://www.sitepoint.com/creating-accurate-timers-in-javascript/
+  var startTime = new Date().getTime();
+  $window.setTimeout(decrement, timeoutInterval);
 }

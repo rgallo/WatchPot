@@ -30,8 +30,13 @@
             },
             {
                 "file": "images/coffeecup.png",
-                "menuIcon": true,
                 "name": "IMAGES_COFFEECUP_PNG",
+                "type": "png"
+            },
+            {
+                "file": "images/coffeecupwhitebg.png",
+                "menuIcon": true,
+                "name": "IMAGES_COFFEECUPWHITEBG_PNG",
                 "type": "png"
             }
         ]
