@@ -35,7 +35,7 @@ input[type=number] {
 var myApp = angular.module('watchPot',[]);
 
 function CoffeeCtrl($scope, $location) {
-    $scope.timers = $location.path() ? JSON.parse($location.path().substring($location.path().indexOf('/')+1)) : [];
+    $scope.timers = localStorage['timers'] ? JSON.parse(localStorage.timers) : [];
     $scope.labelOptions = ['Pour', 'Stir', 'Steep', 'Plunge', 'Flip', 'Wait'];
     $scope.grindOptions = ['Fine', 'Medium Fine', 'Medium', 'Medium Course', 'Course'];
     $scope.unitOptions = ['g', 'fl oz', 'ml', 'c', 'scoops', 'shots'];
