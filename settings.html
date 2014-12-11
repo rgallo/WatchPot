@@ -1,16 +1,11 @@
 <html><head><style type="text/css"></style>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <title> - jsFiddle demo by TransatlanticFoe</title>
+  <title>WatchPot Settings</title>
   
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.js"></script>
   
-  
-  
-  
-  
-  
   <style type="text/css">
-    .timers {
+.timers {
     margin-bottom: 25px;
 }
 
@@ -35,15 +30,12 @@ input[type=number] {
     width: 100px;
 }
   </style>
-  
-
-
 <script type="text/javascript">//<![CDATA[ 
 
 var myApp = angular.module('watchPot',[]);
 
-function CoffeeCtrl($scope) {
-    $scope.timers = [];
+function CoffeeCtrl($scope, $location) {
+    $scope.timers = JSON.parse($location.hash) || [];
     $scope.labelOptions = ['Pour', 'Stir', 'Steep', 'Plunge', 'Flip', 'Wait'];
     $scope.grindOptions = ['Fine', 'Medium Fine', 'Medium', 'Medium Course', 'Course'];
     $scope.unitOptions = ['g', 'fl oz', 'ml', 'c', 'scoops', 'shots'];
@@ -84,7 +76,6 @@ function CoffeeCtrl($scope) {
 //]]>  
 
 </script>
-
 
 </head>
 <body>
