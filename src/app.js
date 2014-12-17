@@ -7,10 +7,13 @@
 var UI = require('ui');
 var Vector2 = require('vector2');
 var Vibe = require('ui/vibe');
+var Settings = require('settings');
 
 var BUFFER_LENGTH = 2;
 
 var $window = window;  // CloudPebble complains about window not existing, use $window to consolidate warnings.
+
+var windowStack = [];
 
 var sampleData = [{
   name: 'Bold',
@@ -93,26 +96,69 @@ var sampleData = [{
                 }]
 }];
 
-var mainMenuItems = [];
-for (var i = 0; i < sampleData.length; i++) {
-  mainMenuItems.push({
-    title: sampleData[i].name,
-    subtitle: sampleData[i].description
-  });
+var timers = [];
+console.log(localStorage.watchpot_timers);
+if ("watchpot_timers" in localStorage && localStorage.watchpot_timers) {
+  timers = JSON.parse(localStorage.watchpot_timers);
 }
 
-var mainMenu = new UI.Menu({
-  sections: [{
-    title: 'WatchPot',
-    items: mainMenuItems,
-  }]
+//localStorage.watchpot_timers = JSON.stringify(sampleData);
+
+Pebble.addEventListener("showConfiguration", function() {
+  Pebble.openURL('http://rgallo.github.io/WatchPot/settings.html#' + encodeURIComponent(localStorage.watchpot_timers));
 });
 
-mainMenu.on('select', function(e) {
-  showTimer(sampleData[e.itemIndex]);
+Pebble.addEventListener("webviewclosed", function(e) {
+  console.log("configuration closed");
+  console.log(JSON.stringify(e));
+  if (e.response) {
+    timers = JSON.parse(e.response).timers;
+  } else {
+    timers = ("watchpot_timers" in localStorage && localStorage.watchpot_timers) ? JSON.parse(localStorage.watchpot_timers) : [];
+  }
+  localStorage.watchpot_timers = JSON.stringify(timers);
+  showMainMenu();
 });
 
-mainMenu.show();
+function hideAllWindows() {
+  for (var i=0; i<windowStack.length; i++) {
+    windowStack.pop().hide();
+  }
+}
+
+function showMainMenu() {
+  hideAllWindows();
+  if (timers.length) {
+    var mainMenuItems = [];
+    for (var i = 0; i < timers.length; i++) {
+      mainMenuItems.push({
+        title: timers[i].name,
+        subtitle: timers[i].description
+      });
+    }
+    
+    var mainMenu = new UI.Menu({
+      sections: [{
+        title: 'WatchPot',
+        items: mainMenuItems,
+      }]
+    });
+    
+    mainMenu.on('select', function(e) {
+      showTimer(timers[e.itemIndex]);
+    });
+    mainMenu.show();
+    windowStack.push(mainMenu);
+  } else {
+    var noTimerCard = new UI.Card({
+      title: 'Add timers from settings'
+    });
+    noTimerCard.show();
+    windowStack.push(noTimerCard);
+  }
+}
+
+showMainMenu();
 
 function showTimer(timer) {
   var timerCard = new UI.Card({
@@ -121,6 +167,7 @@ function showTimer(timer) {
     scrollable: true
   });
   timerCard.show();
+  windowStack.push(timerCard);
   timerCard.on('click', 'select', function(e) {
     startTimer(timer);
   });
@@ -138,7 +185,7 @@ function getTimerCardBody(timer) {
 }
 
 function startTimer(timer) {
-  var timeoutInterval = 200,
+  var timeoutInterval = 100,
       timeoutIterations = 1000/timeoutInterval,
       timerSteps = timer.timerSteps;
     var timerWindow = new UI.Window();
@@ -167,6 +214,7 @@ function startTimer(timer) {
   });
   timerWindow.add(timerLabelBottom);
   timerWindow.show();
+  windowStack.push(timerWindow);
   
   var currentStep = 0,
       timeLeft = 0,

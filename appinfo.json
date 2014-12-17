@@ -1,7 +1,7 @@
 {
     "appKeys": {},
     "capabilities": [
-        ""
+        "configurable"
     ],
     "companyName": "ryan.j.gallo@gmail.com",
     "longName": "WatchPot",
