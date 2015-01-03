@@ -1,13 +1,10 @@
 <html><head><style type="text/css"></style>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <title>WatchPot Settings</title>
-  
-  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.js"></script>
-  
+
+  <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.js"></script>
+
   <style type="text/css">
-.timers {
-    margin-bottom: 25px;
-}
 
 .timerStep {
     margin-left: 20px;
@@ -29,8 +26,35 @@ label > * {
 input[type=number] {
     width: 100px;
 }
+
+.timerLabel {
+  display: inline-block;
+  padding: 5px;
+  background-color: lightgray;
+  border: 1px solid black;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.timerLabel:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.timerLabel:before {
+  content: '+';
+}
+
+.timerLabel.expanded:before {
+  content: '-';
+}
+
+body {
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-weight: 300;
+}
   </style>
-<script type="text/javascript">//<![CDATA[ 
+<script type="text/javascript">//<![CDATA[
 
 var myApp = angular.module('watchPot',[]);
 
@@ -39,9 +63,15 @@ function CoffeeCtrl($scope, $location) {
     $scope.labelOptions = ['Pour', 'Stir', 'Steep', 'Plunge', 'Flip', 'Wait'];
     $scope.grindOptions = ['Fine', 'Medium Fine', 'Medium', 'Medium Course', 'Course'];
     $scope.unitOptions = ['g', 'fl oz', 'ml', 'c', 'scoops', 'shots'];
-    
+    $scope.expanded = [];
+
+    angular.forEach($scope.timers, function() {
+        $scope.expanded.push(false);
+    });
+
     $scope.addTimer = function() {
-        var l = $scope.timers.push({
+        $scope.expanded.push(true);
+        $scope.timers.push({
             name: '',
             description: '',
             grind: '',
@@ -49,10 +79,10 @@ function CoffeeCtrl($scope, $location) {
             coffeeUnit: 'g',
             waterAmount: 0.0,
             waterUnit: 'g',
-            timerSteps: []
+            timerSteps: [],
         });
     };
-    
+
     $scope.addTimerStep = function(timer) {
         timer.timerSteps.push({
             label: '',
@@ -60,20 +90,107 @@ function CoffeeCtrl($scope, $location) {
             buffer: false
         });
     }
-    
+
     $scope.removeTimerStep = function(timer, idx) {
         timer.timerSteps.splice(idx, 1);
     }
-    
+
     $scope.removeTimer = function(idx) {
         $scope.timers.splice(idx, 1);
+        $scope.expanded.splice(idx, 1);
     }
-    
+
     $scope.save = function() {
         document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify({'timers': $scope.timers}));
     }
+
+    // PRESETS
+    $scope.presets = [
+        {'Aeropress Bold': {
+          name: 'Aeropress Bold',
+          description: 'Inverted',
+          grind: 'Medium Fine',
+          coffeeAmount: 15,
+          coffeeUnit: 'g',
+          waterAmount: 200,
+          waterUnit: 'g',
+          timerSteps: [{
+                            label: 'Pour',
+                            len: 10,
+                            buffer: false
+                        }, {
+                            label: 'Stir',
+                            len: 45,
+                            buffer: false
+                        }, {
+                            label: 'Flip',
+                            len: 5,
+                            buffer: false
+                        }, {
+                            label: 'Plunge',
+                            len: 20,
+                            buffer: false
+                        }]
+        }},
+        {'Aeropress Iced': {
+          name: 'Aeropress Iced',
+          description: 'Inverted, Over Ice',
+          grind: 'Medium Fine',
+          coffeeAmount: 17,
+          coffeeUnit: 'g',
+          waterAmount: 175,
+          waterUnit: 'g',
+          timerSteps: [{
+                            label: 'Pour',
+                            len: 10,
+                            buffer: false
+                        },{
+                            label: 'Stir',
+                            len: 35,
+                            buffer: false
+                        },{
+                            label: 'Steep',
+                            len: 60,
+                            buffer: false
+                        },{
+                            label: 'Flip',
+                            len: 5,
+                            buffer: false
+                        },{
+                            label: 'Plunge',
+                            len: 20,
+                            buffer: false
+                        }]
+        }},
+        {'Aeropress Wren': {
+          name: 'Aeropress Wren',
+          description: 'Traditional Aeropress For Two',
+          grind: 'Medium Fine',
+          coffeeAmount: 25,
+          coffeeUnit: 'g',
+          waterAmount: 200,
+          waterUnit: 'g',
+          timerSteps: [{
+                            label: 'Pour',
+                            len: 10,
+                            buffer: false
+                        },{
+                            label: 'Stir',
+                            len: 15,
+                            buffer: false
+                        },{
+                            label: 'Steep',
+                            len: 25,
+                            buffer: false
+                        },{
+                            label: 'Plunge',
+                            len: 25,
+                            buffer: false
+                        }]
+        }}
+    ];
 }
-//]]>  
+//]]>
 
 </script>
 
@@ -84,6 +201,8 @@ function CoffeeCtrl($scope, $location) {
         <h1>WatchPot</h1>
         <div ng-show="!timers.length">Add a timer to get started.</div>
         <div ng-hide="!timers.length" class="timers" ng-repeat="timer in timers">
+          <div class="timerLabel" ng-class="{expanded: expanded[$index]}" ng-click="expanded[$index] = !expanded[$index]">{{ timer.name || "Unnamed timer" }}</div>
+          <div ng-show="expanded[$index]">
             <label>Name
                 <input type='text' ng-model='timer.name'></input>
             </label>
@@ -107,7 +226,7 @@ function CoffeeCtrl($scope, $location) {
                     <select class="unit" ng-model="timer.waterUnit" ng-options='u for u in unitOptions'>
                     </select>
                 </div>
-                    
+
             </label>
             <div ng-show="!timer.timerSteps.length">Add at least one timer step.</div>
             <div ng-hide="!timer.timerSteps.length" class="timerStep" ng-repeat="timerStep in timer.timerSteps">
@@ -126,6 +245,7 @@ function CoffeeCtrl($scope, $location) {
             </div>
             <button ng-click="addTimerStep(timer)">Add Timer Step</button>
             <button ng-click="removeTimer($index)">Remove Timer</button>
+          </div>
         </div>
         <br />
         <button ng-click="addTimer()">Add Timer</button>
