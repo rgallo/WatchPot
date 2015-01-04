@@ -138,7 +138,12 @@ function startTimer(timer) {
       time = 0,
       isBuffer = false,
       isDone = false,
-      timeoutCounter = 0;
+      timeoutCounter = 0,
+      killTimer = false;
+  timerWindow.on('click', 'back', function(e) {
+    killTimer = true;
+    timerWindow.hide();
+  });
   function startTimerStep(step, nextStepName, vibeLen) {
     timeLeft = step.len;
     timerField.text(step.len);
@@ -151,6 +156,10 @@ function startTimer(timer) {
     Vibe.vibrate(vibeLen);
   }
   function decrement() {
+    if (killTimer) {
+      killTimer = false;
+      return;
+    }
     time += timeoutInterval;
     if (++timeoutCounter >= timeoutIterations) {
       timeoutCounter = 0;
