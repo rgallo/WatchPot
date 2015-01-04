@@ -75,10 +75,11 @@ function CoffeeCtrl($scope, $location) {
             name: '',
             description: '',
             grind: '',
-            coffeeAmount: 0.0,
+            coffeeAmount: '',
             coffeeUnit: 'g',
-            waterAmount: 0.0,
+            waterAmount: '',
             waterUnit: 'g',
+            bufferStart: true,
             timerSteps: [],
         });
     };
@@ -86,7 +87,7 @@ function CoffeeCtrl($scope, $location) {
     $scope.addTimerStep = function(timer) {
         timer.timerSteps.push({
             label: '',
-            len: 0,
+            len: '',
             buffer: false
         });
     }
@@ -121,6 +122,7 @@ function CoffeeCtrl($scope, $location) {
           coffeeUnit: 'g',
           waterAmount: 200,
           waterUnit: 'g',
+          bufferStart: true,
           timerSteps: [{
                             label: 'Pour',
                             len: 10,
@@ -147,6 +149,7 @@ function CoffeeCtrl($scope, $location) {
           coffeeUnit: 'g',
           waterAmount: 175,
           waterUnit: 'g',
+          bufferStart: true,
           timerSteps: [{
                             label: 'Pour',
                             len: 10,
@@ -177,6 +180,7 @@ function CoffeeCtrl($scope, $location) {
           coffeeUnit: 'g',
           waterAmount: 200,
           waterUnit: 'g',
+          bufferStart: true,
           timerSteps: [{
                             label: 'Pour',
                             len: 10,
@@ -234,7 +238,9 @@ function CoffeeCtrl($scope, $location) {
                     <select class="unit" ng-model="timer.waterUnit" ng-options='u for u in unitOptions'>
                     </select>
                 </div>
-
+            </label>
+            <label>Buffer start?
+              <input type="checkbox" ng-model="timer.bufferStart"></input>
             </label>
             <div ng-show="!timer.timerSteps.length">Add at least one timer step.</div>
             <div ng-hide="!timer.timerSteps.length" class="timerStep" ng-repeat="timerStep in timer.timerSteps">
