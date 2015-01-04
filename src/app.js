@@ -7,7 +7,6 @@
 var UI = require('ui');
 var Vector2 = require('vector2');
 var Vibe = require('ui/vibe');
-var Settings = require('settings');
 
 var BUFFER_LENGTH = 2;
 
@@ -15,94 +14,11 @@ var $window = window;  // CloudPebble complains about window not existing, use $
 
 var windowStack = [];
 
-var sampleData = [{
-  name: 'Bold',
-  description: 'Inverted Aeropress',
-  grind: 'Medium Fine',
-  coffeeAmount: 15,
-  coffeeUnit: 'g',
-  waterAmount: 200,
-  waterUnit: 'g',
-  timerSteps: [{
-                    label: 'Pour',
-                    len: 10,
-                    buffer: false
-                }, {
-                    label: 'Stir',
-                    len: 45,
-                    buffer: false
-                }, {
-                    label: 'Flip',
-                    len: 5,
-                    buffer: false
-                }, {
-                    label: 'Plunge',
-                    len: 20,
-                    buffer: false
-                }]
-}, {
-  name: 'Iced',
-  description: 'Inverted Aeropress Over Ice',
-  grind: 'Medium Fine',
-  coffeeAmount: 17,
-  coffeeUnit: 'g',
-  waterAmount: 175,
-  waterUnit: 'g',
-  timerSteps: [{
-                    label: 'Pour',
-                    len: 10,
-                    buffer: false
-                },{
-                    label: 'Stir',
-                    len: 35,
-                    buffer: false
-                },{
-                    label: 'Steep',
-                    len: 60,
-                    buffer: false
-                },{
-                    label: 'Flip',
-                    len: 5,
-                    buffer: false
-                },{
-                    label: 'Plunge',
-                    len: 20,
-                    buffer: false
-                }]
-}, {
-  name: 'Wren',
-  description: 'Traditional Aeropress For Two',
-  grind: 'Medium Fine',
-  coffeeAmount: 25,
-  coffeeUnit: 'g',
-  waterAmount: 200,
-  waterUnit: 'g',
-  timerSteps: [{
-                    label: 'Pour',
-                    len: 10,
-                    buffer: false
-                },{
-                    label: 'Stir',
-                    len: 15,
-                    buffer: false
-                },{
-                    label: 'Steep',
-                    len: 25,
-                    buffer: false
-                },{
-                    label: 'Plunge',
-                    len: 25,
-                    buffer: false
-                }]
-}];
-
 var timers = [];
 console.log(localStorage.watchpot_timers);
 if ("watchpot_timers" in localStorage && localStorage.watchpot_timers) {
   timers = JSON.parse(localStorage.watchpot_timers);
 }
-
-//localStorage.watchpot_timers = JSON.stringify(sampleData);
 
 Pebble.addEventListener("showConfiguration", function() {
   Pebble.openURL('http://rgallo.github.io/WatchPot/settings.html#' + encodeURIComponent(localStorage.watchpot_timers));
@@ -187,7 +103,8 @@ function getTimerCardBody(timer) {
 function startTimer(timer) {
   var timeoutInterval = 100,
       timeoutIterations = 1000/timeoutInterval,
-      timerSteps = timer.timerSteps;
+      timerSteps = timer.timerSteps,
+      bufferStart = timer.bufferStart;
     var timerWindow = new UI.Window();
     var timerLabel = new UI.Text({
     position: new Vector2(0, 10),
@@ -268,9 +185,15 @@ function startTimer(timer) {
     }
     if (!isDone || timeLeft) {
       var timeDiff = (new Date().getTime() - startTime) - time;
-      console.log(timeDiff);
       $window.setTimeout(decrement, timeoutInterval-timeDiff);
     }
+  }
+  if (bufferStart) {
+    timerSteps.unshift({
+      label: 'Get Ready!',
+      len: 3,
+      buffer: false
+    });
   }
   startTimerStep(timerSteps[currentStep], currentStep+1 < timerSteps.length ? timerSteps[currentStep+1].label : "", 'short');
   // http://www.sitepoint.com/creating-accurate-timers-in-javascript/
